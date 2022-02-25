@@ -6,7 +6,6 @@ from labelme import QT5
 from labelme.shape import Shape
 import labelme.utils
 
-
 # TODO(unknown):
 # - [maybe] Find optimal epsilon value.
 
@@ -25,6 +24,7 @@ class Canvas(QtWidgets.QWidget):
     zoomRequest = QtCore.Signal(int, QtCore.QPoint)
     scrollRequest = QtCore.Signal(int, int)
     newShape = QtCore.Signal()
+    newShapes = QtCore.Signal(int)
     selectionChanged = QtCore.Signal(list)
     shapeMoved = QtCore.Signal()
     drawingPolygon = QtCore.Signal(bool)
@@ -108,9 +108,10 @@ class Canvas(QtWidgets.QWidget):
             "line",
             "point",
             "linestrip",
+            "grid"
         ]:
             raise ValueError("Unsupported createMode: %s" % value)
-        self._createMode = value
+        self._createMode = value    
 
     def storeShapes(self):
         shapesBackup = []
@@ -225,7 +226,7 @@ class Canvas(QtWidgets.QWidget):
             if self.createMode in ["polygon", "linestrip"]:
                 self.line[0] = self.current[-1]
                 self.line[1] = pos
-            elif self.createMode == "rectangle":
+            elif self.createMode in ["grid", "rectangle"]:
                 self.line.points = [self.current[0], pos]
                 self.line.close()
             elif self.createMode == "circle":
@@ -359,7 +360,7 @@ class Canvas(QtWidgets.QWidget):
                         self.line[0] = self.current[-1]
                         if self.current.isClosed():
                             self.finalise()
-                    elif self.createMode in ["rectangle", "circle", "line"]:
+                    elif self.createMode in ["rectangle", "circle", "line", "grid"]:
                         assert len(self.current.points) == 1
                         self.current.points = self.line.points
                         self.finalise()
@@ -665,11 +666,19 @@ class Canvas(QtWidgets.QWidget):
     def finalise(self):
         assert self.current
         self.current.close()
-        self.shapes.append(self.current)
-        self.storeShapes()
-        self.current = None
-        self.setHiding(False)
-        self.newShape.emit()
+        if self.createMode == "grid": 
+            new_shapes = labelme.utils.processGrid(self.current, 20, 10)
+            self.shapes += new_shapes
+            self.storeShapes()
+            self.current = None
+            self.setHiding(False)
+            self.newShapes.emit(len(new_shapes))
+        else: 
+            self.shapes.append(self.current)
+            self.storeShapes()
+            self.current = None
+            self.setHiding(False)
+            self.newShape.emit()
         self.update()
 
     def closeEnough(self, p1, p2):
@@ -827,6 +836,15 @@ class Canvas(QtWidgets.QWidget):
         self.shapesBackups.pop()
         self.storeShapes()
         return self.shapes[-1]
+
+    def setLastLabels(self, text, flags, num):
+        assert text
+        for i in range(num): 
+            self.shapes[-(i+1)].label = text
+            self.shapes[-(i+1)].flags = flags
+            self.shapesBackups.pop()
+            self.storeShapes()
+        return self.shapes[-(num+1):-1] + [self.shapes[-1]]
 
     def undoLastLine(self):
         assert self.shapes
