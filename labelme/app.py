@@ -173,7 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
             num_backups=self._config["canvas"]["num_backups"],
         )
         self.canvas.zoomRequest.connect(self.zoomRequest)
-
+        self.canvas.labelEditWithKey.connect(self.editLabelWithKey)
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(self.canvas)
         scrollArea.setWidgetResizable(True)
@@ -1076,6 +1076,29 @@ class MainWindow(QtWidgets.QMainWindow):
                 if label_i == label:
                     return True
         return False
+
+    def editLabelWithKey(self, key, shape): 
+        #print(f'key {key} shape {shape.label}')
+        if self.uniqLabelList.count() < key: 
+            return 
+        target_label = self.uniqLabelList.item(key-1).data(Qt.UserRole)
+        shape.label = target_label
+        self._update_shape_color(shape)
+        item = self.labelList.findItemByShape(shape)
+        if shape.group_id is None:
+            item.setText(
+                '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
+                    shape.label, *shape.fill_color.getRgb()[:3]
+                )
+            )
+        else:
+            item.setText("{} ({})".format(shape.label, shape.group_id))
+        self.setDirty()
+        if not self.uniqLabelList.findItemsByLabel(shape.label):
+            item = QtWidgets.QListWidgetItem()
+            item.setData(Qt.UserRole, shape.label)
+            self.uniqLabelList.addItem(item)
+
 
     def editLabel(self, item=None):
         if item and not isinstance(item, LabelListWidgetItem):

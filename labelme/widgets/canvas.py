@@ -29,6 +29,7 @@ class Canvas(QtWidgets.QWidget):
     shapeMoved = QtCore.Signal()
     drawingPolygon = QtCore.Signal(bool)
     vertexSelected = QtCore.Signal(bool)
+    labelEditWithKey = QtCore.Signal(int, Shape)
 
     CREATE, EDIT = 0, 1
     CREATE, EDIT = 0, 1
@@ -811,6 +812,30 @@ class Canvas(QtWidgets.QWidget):
                 self.moveByKeyboard(QtCore.QPoint(-MOVE_SPEED, 0.0))
             elif key == QtCore.Qt.Key_Right:
                 self.moveByKeyboard(QtCore.QPoint(MOVE_SPEED, 0.0))
+            elif key == QtCore.Qt.Key_1: 
+                self.editLabelWithKey(1) 
+            elif key == QtCore.Qt.Key_2: 
+                self.editLabelWithKey(2)  
+            elif key == QtCore.Qt.Key_3: 
+                self.editLabelWithKey(3)  
+            elif key == QtCore.Qt.Key_4: 
+                self.editLabelWithKey(4)  
+            elif key == QtCore.Qt.Key_5: 
+                self.editLabelWithKey(5)  
+            elif key == QtCore.Qt.Key_6: 
+                self.editLabelWithKey(6)  
+            elif key == QtCore.Qt.Key_7: 
+                self.editLabelWithKey(7)  
+            elif key == QtCore.Qt.Key_8: 
+                self.editLabelWithKey(8)  
+            elif key == QtCore.Qt.Key_9: 
+                self.editLabelWithKey(9)  
+            
+
+    def editLabelWithKey(self, key):
+        if self.hShape is None: 
+            return
+        self.labelEditWithKey.emit(key, self.hShape)
 
     def keyReleaseEvent(self, ev):
         modifiers = ev.modifiers()
