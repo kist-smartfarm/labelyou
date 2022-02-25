@@ -324,6 +324,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Start drawing polygons"),
             enabled=False,
         )
+        createGridMode = action( 
+            self.tr("Create Grid"), 
+            lambda: print('grid!'), 
+            shortcuts["create_grid"], 
+            "objects", 
+            self.tr("Start drawing the outlie of grid"), 
+            enabled=False
+        )
         createRectangleMode = action(
             self.tr("Create Rectangle"),
             lambda: self.toggleDrawMode(False, createMode="rectangle"),
@@ -595,6 +603,7 @@ class MainWindow(QtWidgets.QMainWindow):
             removePoint=removePoint,
             createMode=createMode,
             editMode=editMode,
+            createGridMode = createGridMode, 
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -628,12 +637,13 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
             # menu shown at right click
             menu=(
-                createMode,
+                createMode,                
                 createRectangleMode,
                 createCircleMode,
                 createLineMode,
                 createPointMode,
                 createLineStripMode,
+                createGridMode, 
                 editMode,
                 edit,
                 duplicate,
@@ -652,6 +662,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 createLineMode,
                 createPointMode,
                 createLineStripMode,
+                createGridMode, 
                 editMode,
                 brightnessContrast,
             ),
@@ -858,6 +869,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.createLineMode,
             self.actions.createPointMode,
             self.actions.createLineStripMode,
+            self.actions.createGridMode, 
             self.actions.editMode,
         )
         utils.addActions(self.menus.edit, actions + self.actions.editMenu)
