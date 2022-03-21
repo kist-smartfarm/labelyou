@@ -1,7 +1,7 @@
 # ~~labelme~~  labelyou
 
 <h1 align="center">
-  <img src="labelme/icons/icon.jpg"><br/>
+  <img src="labelme/icons/icon.png"><br/>
 </h1>
 
 ## Description 
