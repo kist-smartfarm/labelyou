@@ -1132,20 +1132,23 @@ class MainWindow(QtWidgets.QMainWindow):
         shape.flags = flags
         shape.group_id = group_id
 
+        if not self.uniqLabelList.findItemsByLabel(shape.label):
+            uniq_item = self.uniqLabelList.createItemFromLabel(shape.label)
+            self.uniqLabelList.addItem(uniq_item)
+            rgb = self._get_rgb_by_label(shape.label)
+            self.uniqLabelList.setItemLabel(uniq_item, shape.label, rgb)
+            self.labelDialog.addLabelHistory(shape.label)
+
         self._update_shape_color(shape)
+
         if shape.group_id is None:
             item.setText(
                 '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
-                    shape.label, *shape.fill_color.getRgb()[:3]
-                )
-            )
+                    text, *shape.fill_color.getRgb()[:3]))
         else:
-            item.setText("{} ({})".format(shape.label, shape.group_id))
+            item.setText("{} ({})".format(shape.label, shape.group_id)) 
         self.setDirty()
-        if not self.uniqLabelList.findItemsByLabel(shape.label):
-            item = QtWidgets.QListWidgetItem()
-            item.setData(Qt.UserRole, shape.label)
-            self.uniqLabelList.addItem(item)
+        
 
     def fileSearchChanged(self):
         self.importDirImages(
@@ -1429,14 +1432,21 @@ class MainWindow(QtWidgets.QMainWindow):
     
     #for grid
     def newShapes(self, n): 
-        assert n is not 0
+        assert n != 0
         self.status(f"I am making {n} cells in the grid....;;")
         # return it! 
         items = self.uniqLabelList.selectedItems()
         text = None
         if items:
             text = items[0].data(Qt.UserRole)
-        text, flags, group_id = self.labelDialog.popUp()
+        flags = {}
+        group_id = None
+        if self._config["display_label_popup"] or not text:
+            previous_text = self.labelDialog.edit.text()
+            text, flags, group_id = self.labelDialog.popUp(text)
+            if not text:
+                self.labelDialog.edit.setText(previous_text)
+
         if text and not self.validateLabel(text):
             self.errorMessage(
                 self.tr("Invalid label"),
@@ -1445,11 +1455,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 ),
             )
             text = ""
-        print(f'setting as {text}')
         if text: 
             self.labelList.clearSelection()
             shapes = self.canvas.setLastLabels(text, flags, n)
-            print(len(shapes))
             for shape in shapes: 
                 shape.group_id = group_id
                 self.addLabel(shape)
