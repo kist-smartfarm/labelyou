@@ -5,6 +5,7 @@ from qtpy import QtWidgets
 from labelme import QT5
 from labelme.shape import Shape
 import labelme.utils
+from labelme.widgets.grid_dialog import GridDialog
 
 # TODO(unknown):
 # - [maybe] Find optimal epsilon value.
@@ -90,6 +91,11 @@ class Canvas(QtWidgets.QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(QtCore.Qt.WheelFocus)
 
+        #grid related member 
+        self.grid_row = 1 
+        self.grid_col = 1 
+        self.grid_margin = 1 
+
     def fillDrawing(self):
         return self._fill_drawing
 
@@ -120,7 +126,7 @@ class Canvas(QtWidgets.QWidget):
             shapesBackup.append(shape.copy())
         if len(self.shapesBackups) > self.num_backups:
             self.shapesBackups = self.shapesBackups[-self.num_backups - 1 :]
-        self.shapesBackups.append(shapesBackup)
+        self.shapesBackups += shapesBackup
 
     @property
     def isShapeRestorable(self):
@@ -668,7 +674,8 @@ class Canvas(QtWidgets.QWidget):
         assert self.current
         self.current.close()
         if self.createMode == "grid": 
-            new_shapes = labelme.utils.processGrid(self.current, 20, 10)
+            #TODO 
+            new_shapes = labelme.utils.processGrid(self.current, self.grid_col, self.grid_row, self.grid_margin)
             self.shapes += new_shapes
             self.storeShapes()
             self.current = None
@@ -791,14 +798,18 @@ class Canvas(QtWidgets.QWidget):
             self.repaint()
             self.movingShape = True
 
+    def cancle_drawing_all(self): 
+        self.current = None
+        self.drawingPolygon.emit(False)
+        self.update()
+        
     def keyPressEvent(self, ev):
         modifiers = ev.modifiers()
         key = ev.key()
         if self.drawing():
             if key == QtCore.Qt.Key_Escape and self.current:
-                self.current = None
-                self.drawingPolygon.emit(False)
-                self.update()
+                self.cancle_drawing_all() 
+
             elif key == QtCore.Qt.Key_Return and self.canCloseShape():
                 self.finalise()
             elif modifiers == QtCore.Qt.AltModifier:
@@ -865,11 +876,11 @@ class Canvas(QtWidgets.QWidget):
     def setLastLabels(self, text, flags, num):
         assert text
         for i in range(num): 
-            self.shapes[-(i+1)].label = text
-            self.shapes[-(i+1)].flags = flags
+            self.shapes[-num+i].label = text
+            self.shapes[-num+i].flags = flags
             self.shapesBackups.pop()
             self.storeShapes()
-        return self.shapes[-(num+1):-1] + [self.shapes[-1]]
+        return self.shapes[-num:]
 
     def undoLastLine(self):
         assert self.shapes

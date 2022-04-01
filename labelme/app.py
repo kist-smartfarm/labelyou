@@ -16,6 +16,7 @@ from qtpy import QtWidgets
 
 from labelme import __appname__
 from labelme import PY2
+from labelme.widgets.grid_dialog import GridDialog
 
 from . import utils
 from labelme.config import get_config
@@ -106,6 +107,8 @@ class MainWindow(QtWidgets.QMainWindow):
             fit_to_content=self._config["fit_to_content"],
             flags=self._config["label_flags"],
         )
+
+        self.gridDialog = GridDialog(parent=self)
 
         self.labelList = LabelListWidget()
         self.lastOpenDir = None
@@ -334,6 +337,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Start drawing the outlie of grid"), 
             enabled=False
         )
+        configureGrid = action(
+            self.tr("Grid Configure"), 
+            self.configureGrid,
+            shortcuts["configure_grid"],
+            None,
+            self.tr("Configuration for grid creation"), 
+            enabled=True 
+        )
+
         createRectangleMode = action(
             self.tr("Create Rectangle"),
             lambda: self.toggleDrawMode(False, createMode="rectangle"),
@@ -606,6 +618,7 @@ class MainWindow(QtWidgets.QMainWindow):
             createMode=createMode,
             editMode=editMode,
             createGridMode = createGridMode, 
+            configureGrid = configureGrid, 
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -630,6 +643,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 duplicate,
                 delete,
                 None,
+                configureGrid, 
+                None, 
                 undo,
                 undoLastPoint,
                 None,
@@ -949,6 +964,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.recentFiles.insert(0, filename)
 
     # Callbacks
+
+    def configureGrid(self): 
+        res = self.gridDialog.popUp()
+        if res:
+            row, col, mar =  res
+            self.canvas.grid_row = row
+            self.canvas.grid_col = col 
+            self.canvas.grid_margin = mar
 
     def undoShapeEdit(self):
         self.canvas.restoreShape()
@@ -1465,9 +1488,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.undoLastPoint.setEnabled(False)
             self.actions.undo.setEnabled(True)
         else:
-            self.canvas.undoLastLine()
-            self.canvas.shapesBackups.pop()
-
+            for i in range(n):
+                self.canvas.undoLastLine()
+                self.canvas.shapesBackups.pop()
+            self.canvas.cancle_drawing_all() 
+            
     def scrollRequest(self, delta, orientation):
         units = -delta * 0.1  # natural scroll
         bar = self.scrollBars[orientation]

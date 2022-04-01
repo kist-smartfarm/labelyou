@@ -3,7 +3,7 @@ from turtle import shape
 from qtpy import QtCore
 from labelme.shape import Shape
 
-def processGrid(box, xcols, ycols): 
+def processGrid(box, xcols, ycols, margin=0): 
     assert xcols > 0 and ycols > 0 
     shapes = [] 
 
@@ -17,10 +17,10 @@ def processGrid(box, xcols, ycols):
 
     for i in range(ycols): 
         for j in range(xcols): 
-            _y0 = y0 + i * yGridSize
-            _x0 = x0 + j * xGridSize
-            _y1 = _y0 + yGridSize
-            _x1 = _x0 + xGridSize
+            _y0 = y0 + i * yGridSize + (margin // 2)
+            _x0 = x0 + j * xGridSize + (margin // 2)
+            _y1 = _y0 + yGridSize - (margin // 2)
+            _x1 = _x0 + xGridSize - (margin // 2)
             rectangle = Shape(shape_type="rectangle")
             rectangle.addPoint(QtCore.QPointF(_x0, _y0))
             rectangle.addPoint(QtCore.QPointF(_x1, _y1))

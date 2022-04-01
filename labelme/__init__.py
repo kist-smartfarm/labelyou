@@ -6,13 +6,13 @@ import sys
 from qtpy import QT_VERSION
 
 
-__appname__ = "labelme"
+__appname__ = "LABELYOU"
 
 # Semantic Versioning 2.0.0: https://semver.org/
-# 1. MAJOR version when you make incompatible API changes;
+# 1. MAJOR version when you make incompatible API changes; 'A' means the labelyou branch
 # 2. MINOR version when you add functionality in a backwards-compatible manner;
 # 3. PATCH version when you make backwards-compatible bug fixes.
-__version__ = "4.6.0"
+__version__ = "4A.5.0"
 
 QT4 = QT_VERSION[0] == "4"
 QT5 = QT_VERSION[0] == "5"
