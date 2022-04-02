@@ -1,5 +1,5 @@
 # ~~labelme~~  labelyou
-![](./labelme/icons/icon.png | width=100)
+![](./labelme/icons/icon.png)
 ---
 ## Description 
 
