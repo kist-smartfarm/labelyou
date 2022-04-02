@@ -126,7 +126,7 @@ class Canvas(QtWidgets.QWidget):
             shapesBackup.append(shape.copy())
         if len(self.shapesBackups) > self.num_backups:
             self.shapesBackups = self.shapesBackups[-self.num_backups - 1 :]
-        self.shapesBackups += shapesBackup
+        self.shapesBackups.append(shapesBackup) 
 
     @property
     def isShapeRestorable(self):
