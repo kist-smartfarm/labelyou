@@ -1,9 +1,6 @@
 # ~~labelme~~  labelyou
-
-<h1 align="center">
-  <img src="labelme/icons/icon.png"><br/>
-</h1>
-
+![](./labelme/icons/icon.png | width=100)
+---
 ## Description 
 
 labelyou is image annotation tool forked from [labelme](https://github.com/wkentaro/labelme) 
