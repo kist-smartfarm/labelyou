@@ -8,6 +8,7 @@ import yaml
 
 from qtpy import QtCore
 from qtpy import QtWidgets
+from qtpy import QT_VERSION
 
 from labelme import __appname__
 from labelme import __version__
@@ -181,6 +182,7 @@ def main():
         win.settings.clear()
         sys.exit(0)
 
+    logger.info(f'Running with PyQt-{QT_VERSION}')
     win.show()
     win.raise_()
     sys.exit(app.exec_())

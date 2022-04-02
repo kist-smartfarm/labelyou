@@ -9,3 +9,6 @@
 
 .DS_Store
 .idea/
+
+*.png
+*.jpg
