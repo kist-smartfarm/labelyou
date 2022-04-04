@@ -1476,9 +1476,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.undoLastPoint.setEnabled(False)
             self.actions.undo.setEnabled(True)
         else:
+            print(n)
+            print(len(self.canvas.shapesBackups))
+            self.canvas.shapesBackups.pop()
             for i in range(n):
                 self.canvas.undoLastLine()
-                self.canvas.shapesBackups.pop()
             self.canvas.cancle_drawing_all() 
             
     def scrollRequest(self, delta, orientation):
