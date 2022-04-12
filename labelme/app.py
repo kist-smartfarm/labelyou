@@ -312,6 +312,23 @@ class MainWindow(QtWidgets.QMainWindow):
             "Close current file",
         )
 
+        
+        export_workspace_images = action(
+            "&Export Annotations as Images",
+            self.export_workspace_images,
+            None,
+            "export workspace images",
+            "Export all annotations as cropped image",
+        )
+
+        export_workspace_annotation_report = action(
+            "&Export Annotation as Report",
+            self.export_workspace_report,
+            None,
+            "export annotation report",
+            "Export workspace information as csv report",
+        )
+
         toggle_keep_prev_mode = action(
             self.tr("Keep Previous Annotation"),
             self.toggleKeepPrevMode,
@@ -695,8 +712,12 @@ class MainWindow(QtWidgets.QMainWindow):
             view=self.menu(self.tr("&View")),
             help=self.menu(self.tr("&Help")),
             recentFiles=QtWidgets.QMenu(self.tr("Open &Recent")),
+            export=QtWidgets.QMenu(self.tr("&Export")),
             labelList=labelMenu,
         )
+
+        self.menus.export.addAction(export_workspace_images)
+        self.menus.export.addAction(export_workspace_annotation_report)
 
         utils.addActions(
             self.menus.file,
@@ -714,6 +735,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 close,
                 deleteFile,
                 None,
+                self.menus.export, 
+                None, 
                 quit,
             ),
         )
@@ -1475,8 +1498,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.editMode.setEnabled(True)
             self.actions.undoLastPoint.setEnabled(False)
             self.actions.undo.setEnabled(True)
+            self.setDirty()
         else:
-            print(n)
             print(len(self.canvas.shapesBackups))
             self.canvas.shapesBackups.pop()
             for i in range(n):
@@ -1964,6 +1987,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggleActions(False)
         self.canvas.setEnabled(False)
         self.actions.saveAs.setEnabled(False)
+
+    def export_workspace_images(self): 
+        if len(self.imageList) == 0:
+            self.statusBar().showMessage(str(self.tr("No File is opened. Exporting images failed.")))
+        else: 
+            self.statusBar().showMessage(str(self.tr("Working on it...")))
+            utils.export_workspace_images(self.imageList)
+            self.statusBar().showMessage(str(self.tr("Exporting done.")))
+ 
+
+    def export_workspace_report(self): 
+        if len(self.imageList) == 0:
+            self.statusBar().showMessage(str(self.tr("No File is opened. Exporting report failed.")))
+        else: 
+            self.statusBar().showMessage(str(self.tr("Working on it...")))
+            utils.export_workspace_annotation_report(self.imageList)
+            self.statusBar().showMessage(str(self.tr("Exporting done.")))
 
     def getLabelFile(self):
         if self.filename.lower().endswith(".json"):
