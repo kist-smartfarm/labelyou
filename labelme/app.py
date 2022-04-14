@@ -314,18 +314,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
         
         export_workspace_images = action(
-            "&Export Annotations as Images",
+            "&Export Label Annotations as Images",
             self.export_workspace_images,
             None,
             "export workspace images",
             "Export all annotations as cropped image",
         )
 
-        export_workspace_annotation_report = action(
-            "&Export Annotation as Report",
-            self.export_workspace_report,
+        export_workspace_label_annotation_report = action(
+            "&Export Label Annotation as Report",
+            self.export_workspace_label_report,
             None,
-            "export annotation report",
+            "export label annotation report",
+            "Export workspace information as csv report",
+        )
+
+
+        export_workspace_flag_annotation_report = action(
+            "&Export Flag Annotation as Report",
+            self.export_workspace_flag_report,
+            None,
+            "export flag annotation report",
             "Export workspace information as csv report",
         )
 
@@ -717,7 +726,8 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         self.menus.export.addAction(export_workspace_images)
-        self.menus.export.addAction(export_workspace_annotation_report)
+        self.menus.export.addAction(export_workspace_label_annotation_report)
+        self.menus.export.addAction(export_workspace_flag_annotation_report)
 
         utils.addActions(
             self.menus.file,
@@ -1997,13 +2007,22 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
  
 
-    def export_workspace_report(self): 
+    def export_workspace_label_report(self): 
         if len(self.imageList) == 0:
             self.statusBar().showMessage(str(self.tr("No File is opened. Exporting report failed.")))
         else: 
             self.statusBar().showMessage(str(self.tr("Working on it...")))
-            utils.export_workspace_annotation_report(self.imageList)
+            utils.export_workspace_label_report(self.imageList)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
+
+    def export_workspace_flag_report(self): 
+        if len(self.imageList) == 0:
+            self.statusBar().showMessage(str(self.tr("No File is opened. Exporting report failed.")))
+        else: 
+            self.statusBar().showMessage(str(self.tr("Working on it...")))
+            utils.export_workspace_flag_report(self.imageList)
+            self.statusBar().showMessage(str(self.tr("Exporting done.")))
+
 
     def getLabelFile(self):
         if self.filename.lower().endswith(".json"):

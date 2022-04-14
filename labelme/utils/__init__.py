@@ -29,4 +29,5 @@ from .qt import fmtShortcut
 from .grid import processGrid
 
 from .export import export_workspace_images
-from .export import export_workspace_annotation_report
+from .export import export_workspace_label_report
+from .export import export_workspace_flag_report
