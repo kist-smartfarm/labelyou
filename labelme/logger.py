@@ -23,7 +23,7 @@ COLORS = {
 
 class ColoredFormatter(logging.Formatter):
     def __init__(self, fmt, use_color=True):
-        logging.Formatter.__init__(self, fmt)
+        logging.Formatter.__init__(self, fmt, datefmt="%Y-%m-%d %H:%M:%S")
         self.use_color = use_color
 
     def format(self, record):
@@ -52,7 +52,7 @@ class ColoredFormatter(logging.Formatter):
 class ColoredLogger(logging.Logger):
 
     FORMAT = (
-        "[%(levelname2)s] %(module2)s:%(funcName2)s:%(lineno2)s - %(message2)s"
+        "[%(levelname2)s] %(asctime)s %(module2)s:%(funcName2)s:%(lineno2)s - %(message2)s"
     )
 
     def __init__(self, name):

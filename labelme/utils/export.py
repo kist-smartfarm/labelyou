@@ -1,10 +1,12 @@
 import PIL 
 import pathlib 
-from multiprocessing import Pool
+import multiprocessing
 import json 
 import datetime
 from .grid import to_excel
 import csv
+
+from labelme.logger import logger
 
 def get_annotation_file_list(image_list): 
     json_list = [] 
@@ -14,40 +16,49 @@ def get_annotation_file_list(image_list):
             json_list.append(json_path)
     return json_list
      
+
+def export_image_worker(output_dir, json_file):
+    with open(json_file) as f: 
+        data = json.load(f) 
+        image_name = pathlib.Path(data['imagePath']).name
+        logger.info(f"Exporting {str(image_name)}")
+
+        img = PIL.Image.open(str(json_file.parents[0] / image_name))
+        output_sub_dir = json_file.parents[0] / output_dir 
+        output_sub_dir = output_sub_dir / f'{str(pathlib.Path(image_name).with_suffix(""))}'
+        output_sub_dir.mkdir(exist_ok=True, parents=True)
+
+        for i, shape in enumerate(data['shapes']): 
+            if shape['shape_type'] != 'rectangle': 
+                continue
+            left = min(shape['points'][0][0], shape['points'][1][0]) 
+            right = max(shape['points'][0][0], shape['points'][1][0]) 
+            bottom = max(shape['points'][0][1], shape['points'][1][1]) 
+            top = min(shape['points'][0][1], shape['points'][1][1]) 
+            cropped_img = img.crop((left, top, right, bottom))
+
+            cropped_img_name = f"{shape['label']}.png"
+            if 'grid_x' in shape and 'grid_y' in shape:
+                cropped_img_name = "_".join([str(i),
+                        str(shape['group_id']) if shape['group_id'] else "",
+                        to_excel(shape['grid_x']+1) + str(shape['grid_y']+1),
+                        cropped_img_name])
+            else: 
+                cropped_img_name = "_".join([str(i), cropped_img_name])
+            cropped_img_path = output_sub_dir / cropped_img_name
+            cropped_img.save(cropped_img_path)
+            
+
 def export_workspace_images(image_list): 
     json_list = get_annotation_file_list(image_list)
     output_dir = 'annotations_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    pool_arg_list = [] 
     for json_file in json_list: 
-        with open(json_file) as f: 
-            data = json.load(f) 
+        pool_arg_list.append((output_dir, json_file))
 
-            image_name = data['imagePath']
-            
-            img = PIL.Image.open(str(json_file.parents[0] / image_name))
-            output_sub_dir = json_file.parents[0] / output_dir 
-            output_sub_dir = output_sub_dir / f'{str(pathlib.Path(image_name).with_suffix(""))}'
-            output_sub_dir.mkdir(exist_ok=True, parents=True)
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        pool.starmap(export_image_worker, pool_arg_list)
 
-            for i, shape in enumerate(data['shapes']): 
-                if shape['shape_type'] != 'rectangle': 
-                    continue
-                left = min(shape['points'][0][0], shape['points'][1][0]) 
-                right = max(shape['points'][0][0], shape['points'][1][0]) 
-                bottom = max(shape['points'][0][1], shape['points'][1][1]) 
-                top = min(shape['points'][0][1], shape['points'][1][1]) 
-                cropped_img = img.crop((left, top, right, bottom))
-
-                cropped_img_name = f"{shape['label']}.png"
-                if 'grid_x' in shape and 'grid_y' in shape:
-                    cropped_img_name = "_".join([str(i),
-                        shape['group_id'] if shape['group_id'] else "",
-                        to_excel(shape['grid_x']+1) + str(shape['grid_y']+1),
-                        cropped_img_name])
-                else: 
-                    cropped_img_name = "_".join([str(i), cropped_img_name])
-                cropped_img_path = output_sub_dir / cropped_img_name
-                cropped_img.save(cropped_img_path)
-            
 
 def export_workspace_label_report(image_list): 
     json_list = get_annotation_file_list(image_list)
