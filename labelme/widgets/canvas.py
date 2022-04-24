@@ -5,6 +5,7 @@ from qtpy import QtWidgets
 from labelme import QT5
 from labelme.shape import Shape
 import labelme.utils
+from labelme.utils.grabcut import processGrabcut
 from labelme.widgets.grid_dialog import GridDialog
 
 # TODO(unknown):
@@ -115,7 +116,8 @@ class Canvas(QtWidgets.QWidget):
             "line",
             "point",
             "linestrip",
-            "grid"
+            "grid", 
+            "magicBox"
         ]:
             raise ValueError("Unsupported createMode: %s" % value)
         self._createMode = value    
@@ -233,7 +235,7 @@ class Canvas(QtWidgets.QWidget):
             if self.createMode in ["polygon", "linestrip"]:
                 self.line[0] = self.current[-1]
                 self.line[1] = pos
-            elif self.createMode in ["grid", "rectangle"]:
+            elif self.createMode in ["grid", "rectangle", "magicBox"]:
                 self.line.points = [self.current[0], pos]
                 self.line.close()
             elif self.createMode == "circle":
@@ -367,7 +369,7 @@ class Canvas(QtWidgets.QWidget):
                         self.line[0] = self.current[-1]
                         if self.current.isClosed():
                             self.finalise()
-                    elif self.createMode in ["rectangle", "circle", "line", "grid"]:
+                    elif self.createMode in ["rectangle", "circle", "line", "grid", "magicBox"]:
                         assert len(self.current.points) == 1
                         self.current.points = self.line.points
                         self.finalise()
@@ -676,13 +678,21 @@ class Canvas(QtWidgets.QWidget):
         assert self.current
         self.current.close()
         if self.createMode == "grid": 
-            #TODO 
             new_shapes = labelme.utils.processGrid(self.current, self.grid_col, self.grid_row, self.grid_margin)
             self.shapes += new_shapes
             self.storeShapes()
             self.current = None
             self.setHiding(False)
             self.newShapes.emit(len(new_shapes))
+        elif self.createMode == "magicBox": #TODO 
+            _shape = self.current
+            self.current = None
+            self.setHiding(False)
+            new_shape = processGrabcut(self.pixmap,_shape) 
+            if new_shape:
+                self.shapes.append(new_shape)
+                self.storeShapes()
+                self.newShape.emit()
         else: 
             self.shapes.append(self.current)
             self.storeShapes()

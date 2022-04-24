@@ -28,6 +28,8 @@ from .qt import fmtShortcut
 
 from .grid import processGrid
 
+from .grabcut import processGrabcut
+
 from .export import export_workspace_images
 from .export import export_workspace_label_report
 from .export import export_workspace_flag_report

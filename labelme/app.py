@@ -415,6 +415,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Start drawing linestrip. Ctrl+LeftClick ends creation."),
             enabled=False,
         )
+        createMagicBoxMode = action(
+            self.tr("Create Magic Box"),
+            lambda: self.toggleDrawMode(False, createMode="magicBox"),
+            shortcuts["create_magicbox"],
+            "objects",
+            self.tr("Creating Magic box that makes polygon with Grabcut algorithm."),
+            enabled=False,
+        )
         editMode = action(
             self.tr("Edit Polygons"),
             self.setEditMode,
@@ -653,6 +661,7 @@ class MainWindow(QtWidgets.QMainWindow):
             createLineMode=createLineMode,
             createPointMode=createPointMode,
             createLineStripMode=createLineStripMode,
+            createMagicBoxMode=createMagicBoxMode, 
             zoom=zoom,
             zoomIn=zoomIn,
             zoomOut=zoomOut,
@@ -690,6 +699,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 createPointMode,
                 createLineStripMode,
                 createGridMode, 
+                createMagicBoxMode, 
                 editMode,
                 edit,
                 duplicate,
@@ -709,6 +719,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 createPointMode,
                 createLineStripMode,
                 createGridMode, 
+                createMagicBoxMode, 
                 editMode,
                 brightnessContrast,
             ),
@@ -914,6 +925,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.createPointMode,
             self.actions.createLineStripMode,
             self.actions.createGridMode, 
+            self.actions.createMagicBoxMode, 
             self.actions.editMode,
         )
         utils.addActions(self.menus.edit, actions + self.actions.editMenu)
@@ -1031,6 +1043,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.createPointMode.setEnabled(True)
             self.actions.createLineStripMode.setEnabled(True)
             self.actions.createGridMode.setEnabled(True)
+            self.actions.createMagicBoxMode.setEnabled(True)
         else:
             if createMode == "polygon":
                 self.actions.createMode.setEnabled(False)
@@ -1040,6 +1053,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
                 self.actions.createGridMode.setEnabled(True)
+                self.actions.createMagicBoxMode.setEnabled(True)
             elif createMode == "rectangle":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(False)
@@ -1047,7 +1061,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
-                self.actions.createGridMode.setEnabled(True)                
+                self.actions.createGridMode.setEnabled(True)   
+                self.actions.createMagicBoxMode.setEnabled(True)      
             elif createMode == "line":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1064,6 +1079,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createPointMode.setEnabled(False)
                 self.actions.createLineStripMode.setEnabled(True)
                 self.actions.createGridMode.setEnabled(True)
+                self.actions.createMagicBoxMode.setEnabled(True)
             elif createMode == "circle":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1072,6 +1088,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
                 self.actions.createGridMode.setEnabled(True)
+                self.actions.createMagicBoxMode.setEnabled(True)
             elif createMode == "linestrip":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1080,6 +1097,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(False)
                 self.actions.createGridMode.setEnabled(True)
+                self.actions.createMagicBoxMode.setEnabled(True)
             elif createMode == "grid":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1088,6 +1106,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
                 self.actions.createGridMode.setEnabled(False)
+                self.actions.createMagicBoxMode.setEnabled(True)
+            elif createMode == "magicBox":
+                self.actions.createMode.setEnabled(True)
+                self.actions.createRectangleMode.setEnabled(True)
+                self.actions.createCircleMode.setEnabled(True)
+                self.actions.createLineMode.setEnabled(True)
+                self.actions.createPointMode.setEnabled(True)
+                self.actions.createLineStripMode.setEnabled(True)
+                self.actions.createGridMode.setEnabled(True)
+                self.actions.createMagicBoxMode.setEnabled(False)
             else:
                 raise ValueError("Unsupported createMode: %s" % createMode)
         self.actions.editMode.setEnabled(not edit)
@@ -1687,6 +1715,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._config["keep_prev"]:
             prev_shapes = self.canvas.shapes
         self.canvas.loadPixmap(QtGui.QPixmap.fromImage(image))
+
         flags = {k: False for k in self._config["flags"] or []}
         if self.labelFile:
             self.loadLabels(self.labelFile.shapes)
@@ -2007,7 +2036,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusBar().showMessage(str(self.tr("Working on it...")))
             utils.export_workspace_images(self.imageList)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
- 
 
     def export_workspace_label_report(self): 
         if len(self.imageList) == 0:

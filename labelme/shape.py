@@ -86,7 +86,7 @@ class Shape(object):
     def shape_type(self, value):
         if value is None:
             value = "polygon"
-        elif value == "grid": 
+        elif value == "grid" or value=="magicBox":
             value = "rectangle"
         if value not in [
             "polygon",

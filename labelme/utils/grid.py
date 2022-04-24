@@ -1,6 +1,5 @@
 from qtpy import QtCore
 from labelme.shape import Shape
-from functools import reduce
 
 def processGrid(box, xnum, ynum, margin=0): 
     assert xnum > 0 and ynum > 0 
