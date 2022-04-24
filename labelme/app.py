@@ -222,6 +222,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "quit",
             self.tr("Quit application"),
         )
+        ''' 
         open_ = action(
             self.tr("&Open"),
             self.openFile,
@@ -229,6 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "open",
             self.tr("Open image or label file"),
         )
+        '''
         opendir = action(
             self.tr("&Open Dir"),
             self.openDirDialog,
@@ -630,7 +632,7 @@ class MainWindow(QtWidgets.QMainWindow):
             changeOutputDir=changeOutputDir,
             save=save,
             saveAs=saveAs,
-            open=open_,
+            #open=open_,
             close=close,
             deleteFile=deleteFile,
             toggleKeepPrevMode=toggle_keep_prev_mode,
@@ -662,7 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
             zoomActions=zoomActions,
             openNextImg=openNextImg,
             openPrevImg=openPrevImg,
-            fileMenuActions=(open_, opendir, save, saveAs, close, quit),
+            fileMenuActions=(opendir, save, saveAs, close, quit), #open_, 
             tool=(),
             # XXX: need to add some actions here to activate the shortcut
             editMenu=(
@@ -732,7 +734,7 @@ class MainWindow(QtWidgets.QMainWindow):
         utils.addActions(
             self.menus.file,
             (
-                open_,
+                #open_,
                 openNextImg,
                 openPrevImg,
                 opendir,
@@ -791,7 +793,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tools = self.toolbar("Tools")
         # Menu buttons on Left
         self.actions.tool = (
-            open_,
+            #open_,
             opendir,
             openNextImg,
             openPrevImg,
