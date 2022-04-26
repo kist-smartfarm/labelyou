@@ -1,5 +1,7 @@
 # ~~labelme~~  labelyou
-<img src="./labelme/icons/icon.png" width="200" height="200">
+
+<img src="./labelme/icons/icon.png" width="250" height="250">
+
 ---
 ## Description 
 
