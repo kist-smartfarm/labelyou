@@ -115,6 +115,8 @@ class MainWindow(QtWidgets.QMainWindow):
                                      margin=self._config["grid"]["margin"])
 
         self.labelList = LabelListWidget()
+        self.labelList.itemKeyPressed.connect(self.onKeyPressedOnLabelWidgetItem)
+
         self.lastOpenDir = None
 
         self.flag_dock = self.flag_widget = None
@@ -1160,9 +1162,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     return True
         return False
 
+    def onKeyPressedOnLabelWidgetItem(self, items, key):
+        for item in items:
+            self.editLabelWithKey(key, item.shape())
+
     def editLabelWithKey(self, key, shape):
         if self.uniqLabelList.count() < key:
-            return 
+            return
         target_label = self.uniqLabelList.item(key - 1).data(Qt.UserRole)
         shape.label = target_label
         self._update_shape_color(shape)
@@ -1541,10 +1547,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 ),
             )
             text = ""
-        if text: 
+        if text:
             self.labelList.clearSelection()
             shapes = self.canvas.setLastLabels(text, flags, n)
-            for shape in shapes: 
+            for shape in shapes:
                 shape.group_id = group_id
                 self.addLabel(shape)
             self.actions.editMode.setEnabled(True)

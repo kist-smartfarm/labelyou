@@ -108,6 +108,7 @@ class LabelListWidget(QtWidgets.QListView):
 
     itemDoubleClicked = QtCore.Signal(LabelListWidgetItem)
     itemSelectionChanged = QtCore.Signal(list, list)
+    itemKeyPressed = QtCore.Signal(list, int)
 
     def __init__(self):
         super(LabelListWidget, self).__init__()
@@ -156,6 +157,28 @@ class LabelListWidget(QtWidgets.QListView):
 
     def selectedItems(self):
         return [self.model().itemFromIndex(i) for i in self.selectedIndexes()]
+
+    def keyPressEvent(self, ev):
+        super().keyPressEvent(ev)
+        key = ev.key()
+        if key == QtCore.Qt.Key_1:
+            self.itemKeyPressed.emit(self.selectedItems(), 1)
+        elif key == QtCore.Qt.Key_2:
+            self.itemKeyPressed.emit(self.selectedItems(), 2)
+        elif key == QtCore.Qt.Key_3:
+            self.itemKeyPressed.emit(self.selectedItems(), 3)
+        elif key == QtCore.Qt.Key_4:
+            self.itemKeyPressed.emit(self.selectedItems(), 4)
+        elif key == QtCore.Qt.Key_5:
+            self.itemKeyPressed.emit(self.selectedItems(), 5)
+        elif key == QtCore.Qt.Key_6:
+            self.itemKeyPressed.emit(self.selectedItems(), 6)
+        elif key == QtCore.Qt.Key_7:
+            self.itemKeyPressed.emit(self.selectedItems(), 7)
+        elif key == QtCore.Qt.Key_8:
+            self.itemKeyPressed.emit(self.selectedItems(), 8)
+        elif key == QtCore.Qt.Key_9:
+            self.itemKeyPressed.emit(self.selectedItems(), 9)
 
     def scrollToItem(self, item):
         self.scrollTo(self.model().indexFromItem(item))
