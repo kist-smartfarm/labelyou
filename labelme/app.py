@@ -106,10 +106,13 @@ class MainWindow(QtWidgets.QMainWindow):
             show_text_field=self._config["show_label_text_field"],
             completion=self._config["label_completion"],
             fit_to_content=self._config["fit_to_content"],
-            flags=self._config["label_flags"],
+            flags=self._config["label_flags"]
         )
 
-        self.gridDialog = GridDialog(parent=self)
+        self.gridDialog = GridDialog(parent=self,
+                                     row=self._config["grid"]["row"],
+                                     col=self._config["grid"]["col"],
+                                     margin=self._config["grid"]["margin"])
 
         self.labelList = LabelListWidget()
         self.lastOpenDir = None
@@ -178,6 +181,8 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.canvas.zoomRequest.connect(self.zoomRequest)
         self.canvas.labelEditWithKey.connect(self.editLabelWithKey)
+        self.canvas.flagEditWithKey.connect(self.editFlagWithKey)
+
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(self.canvas)
         scrollArea.setWidgetResizable(True)
@@ -193,6 +198,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.selectionChanged.connect(self.shapeSelectionChanged)
         self.canvas.drawingPolygon.connect(self.toggleDrawingSensitive)
 
+        self.canvas._config = self._config
+        
         self.setCentralWidget(scrollArea)
 
         features = QtWidgets.QDockWidget.DockWidgetFeatures()
@@ -313,7 +320,6 @@ class MainWindow(QtWidgets.QMainWindow):
             "close",
             "Close current file",
         )
-
         
         export_workspace_images = action(
             "&Export Label Annotations as Images",
@@ -330,7 +336,6 @@ class MainWindow(QtWidgets.QMainWindow):
             "export label annotation report",
             "Export workspace information as csv report",
         )
-
 
         export_workspace_flag_annotation_report = action(
             "&Export Flag Annotation as Report",
@@ -1004,12 +1009,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Callbacks
 
-    def configureGrid(self): 
+    def configureGrid(self):
         res = self.gridDialog.popUp()
         if res:
-            row, col, mar =  res
+            row, col, mar = res
             self.canvas.grid_row = row
-            self.canvas.grid_col = col 
+            self.canvas.grid_col = col
             self.canvas.grid_margin = mar
 
     def undoShapeEdit(self):
@@ -1155,11 +1160,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     return True
         return False
 
-    def editLabelWithKey(self, key, shape): 
-        #print(f'key {key} shape {shape.label}')
-        if self.uniqLabelList.count() < key: 
+    def editLabelWithKey(self, key, shape):
+        if self.uniqLabelList.count() < key:
             return 
-        target_label = self.uniqLabelList.item(key-1).data(Qt.UserRole)
+        target_label = self.uniqLabelList.item(key - 1).data(Qt.UserRole)
         shape.label = target_label
         self._update_shape_color(shape)
         item = self.labelList.findItemByShape(shape)
@@ -1176,12 +1180,20 @@ class MainWindow(QtWidgets.QMainWindow):
             item = QtWidgets.QListWidgetItem()
             item.setData(Qt.UserRole, shape.label)
             self.uniqLabelList.addItem(item)
-
+    
+    def editFlagWithKey(self, key):
+        if len(self.flag_widget) < key:
+            logger.info(f'No Flag mapping for num key {key}')
+            return
+        item = self.flag_widget.item(key - 1)
+        flag_name = item.text()
+        logger.info(f'Toggling the flag "{flag_name}",\
+            {item.checkState()} -> {0 if item.checkState() else 2}')
+        item.setCheckState(0 if item.checkState() else 2)
 
     def editLabel(self, item=None):
         if item and not isinstance(item, LabelListWidgetItem):
             raise TypeError("item must be LabelListWidgetItem type")
-
         if not self.canvas.editing():
             return
         if not item:
@@ -1544,7 +1556,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.shapesBackups.pop()
             for i in range(n):
                 self.canvas.undoLastLine()
-            self.canvas.cancle_drawing_all() 
+            self.canvas.cancle_drawing_all()
             
     def scrollRequest(self, delta, orientation):
         units = -delta * 0.1  # natural scroll

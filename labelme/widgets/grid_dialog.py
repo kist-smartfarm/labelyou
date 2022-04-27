@@ -4,9 +4,9 @@ from qtpy import QtGui
 from qtpy import QtWidgets
 
 from labelme.logger import logger
-import labelme.utils
 
 QT5 = QT_VERSION[0] == "5"
+
 
 class GridDialog(QtWidgets.QDialog):
     def __init__(
@@ -15,15 +15,18 @@ class GridDialog(QtWidgets.QDialog):
         parent=None,
         fit_to_content=None,
         flags=None,
+        row=2,
+        col=2,
+        margin=0
     ):
         if fit_to_content is None:
             fit_to_content = {"row": False, "column": True}
         self._fit_to_content = fit_to_content
         super(GridDialog, self).__init__(parent)
 
-        self.row = 1
-        self.col = 1
-        self.margin = 0 
+        self.row = row
+        self.col = col
+        self.margin = margin
 
         layout = QtWidgets.QVBoxLayout()
         self.edit_row = QtWidgets.QLineEdit()
@@ -50,31 +53,31 @@ class GridDialog(QtWidgets.QDialog):
             QtCore.Qt.Horizontal,
             self,
         )
-        bb.button(bb.Ok)#.setIcon(labelme.utils.newIcon("done"))
-        bb.button(bb.Cancel)#.setIcon(labelme.utils.newIcon("undo"))
+        bb.button(bb.Ok)
+        bb.button(bb.Cancel)
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
         layout.addWidget(bb)
         self.setLayout(layout)
 
-
     def validate(self):
-            row = self.edit_row.text().strip()
-            col = self.edit_col.text().strip() 
-            margin = self.edit_margin.text().strip() 
-            try:
-                r, c, m = int(row), int(col), int(margin)
-                if r <= 0 or c <= 0 or m < 0: 
-                    raise 
-                self.row, self.col, self.margin = r, c, m 
-                self.accept()
-            except: 
-                QtWidgets.QMessageBox.warning(self, "Error", 
-                                    "Validating configuration failed. Try Again.",QtWidgets.QMessageBox.Ok )
+        row = self.edit_row.text().strip()
+        col = self.edit_col.text().strip()
+        margin = self.edit_margin.text().strip()
+        try:
+            r, c, m = int(row), int(col), int(margin)
+            if r <= 0 or c <= 0 or m < 0:
+                raise Exception
+            self.row, self.col, self.margin = r, c, m
+            self.accept()
+        except Exception:
+            QtWidgets.QMessageBox.warning(self, "Error",
+                                          "Validating configuration failed.\
+                                              Try Again.",
+                                          QtWidgets.QMessageBox.Ok)
                             
-        
     def popUp(self, text=None, move=True, flags=None, group_id=None):
-
+        logger.info("Grid Configure")
         self.edit_col.setText(f'{self.col}')
         self.edit_row.setText(f'{self.row}')
         self.edit_margin.setText(f'{self.margin}')

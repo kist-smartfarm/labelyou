@@ -6,7 +6,6 @@ import sys
 
 sys.setrecursionlimit(5000)  # required on Windows
 
-
 a = Analysis(
     ['labelme/__main__.py'],
     pathex=['labelme'],

@@ -105,5 +105,16 @@ shortcuts:
   add_point_to_edge: Ctrl+Shift+P
   edit_label: Ctrl+E
   toggle_keep_prev_mode: Ctrl+P
-  remove_selected_point: [Meta+H, Backspace]
+  remove_selected_point: Backspace
   configure_grid: C
+
+grid: 
+  col: 2
+  row: 2
+  margin : 0 
+
+grabcut: 
+  epsilon: 0.001
+  iteration: 3
+  brush_size: 5
+  convex_hull: false

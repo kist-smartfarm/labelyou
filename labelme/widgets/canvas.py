@@ -32,8 +32,8 @@ class Canvas(QtWidgets.QWidget):
     drawingPolygon = QtCore.Signal(bool)
     vertexSelected = QtCore.Signal(bool)
     labelEditWithKey = QtCore.Signal(int, Shape)
+    flagEditWithKey = QtCore.Signal(int)
 
-    CREATE, EDIT = 0, 1
     CREATE, EDIT = 0, 1
 
     # polygon, rectangle, line, or point
@@ -92,10 +92,13 @@ class Canvas(QtWidgets.QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(QtCore.Qt.WheelFocus)
 
-        #grid related member 
-        self.grid_row = 1 
-        self.grid_col = 1 
-        self.grid_margin = 1 
+        # grid related member
+
+        self.grid_row = 1
+        self.grid_col = 1
+        self.grid_margin = 1
+
+        self._config = None
 
     def fillDrawing(self):
         return self._fill_drawing
@@ -116,11 +119,11 @@ class Canvas(QtWidgets.QWidget):
             "line",
             "point",
             "linestrip",
-            "grid", 
+            "grid",
             "magicBox"
         ]:
             raise ValueError("Unsupported createMode: %s" % value)
-        self._createMode = value    
+        self._createMode = value
 
     def storeShapes(self):
         shapesBackup = []
@@ -128,7 +131,7 @@ class Canvas(QtWidgets.QWidget):
             shapesBackup.append(shape.copy())
         if len(self.shapesBackups) > self.num_backups:
             self.shapesBackups = self.shapesBackups[-self.num_backups - 1 :]
-        self.shapesBackups.append(shapesBackup) 
+        self.shapesBackups.append(shapesBackup)
 
     @property
     def isShapeRestorable(self):
@@ -405,7 +408,6 @@ class Canvas(QtWidgets.QWidget):
                 self.selectShapePoint(pos, multiple_selection_mode=group_mode)
                 self.prevPoint = pos
                 self.repaint()
-
 
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
@@ -684,16 +686,23 @@ class Canvas(QtWidgets.QWidget):
             self.current = None
             self.setHiding(False)
             self.newShapes.emit(len(new_shapes))
-        elif self.createMode == "magicBox": #TODO 
+        elif self.createMode == "magicBox":
             _shape = self.current
             self.current = None
             self.setHiding(False)
-            new_shape = processGrabcut(self.pixmap,_shape) 
-            if new_shape:
-                self.shapes.append(new_shape)
+            new_shapes = processGrabcut(
+                self.pixmap, _shape,
+                polygon_epsilon=self._config['grabcut']['epsilon'],
+                iteration=self._config['grabcut']['iteration'],
+                brush_size=self._config['grabcut']['brush_size'],
+                convex_hull=self._config['grabcut']['convex_hull'])
+            if len(new_shapes) > 0:
+                self.shapes += new_shapes
                 self.storeShapes()
-                self.newShape.emit()
-        else: 
+                self.newShapes.emit(len(new_shapes))
+            else:
+                self.canvas.cancle_drawing_all()
+        else:
             self.shapes.append(self.current)
             self.storeShapes()
             self.current = None
@@ -835,30 +844,30 @@ class Canvas(QtWidgets.QWidget):
                 self.moveByKeyboard(QtCore.QPoint(-MOVE_SPEED, 0.0))
             elif key == QtCore.Qt.Key_Right:
                 self.moveByKeyboard(QtCore.QPoint(MOVE_SPEED, 0.0))
-            elif key == QtCore.Qt.Key_1: 
-                self.editLabelWithKey(1) 
-            elif key == QtCore.Qt.Key_2: 
-                self.editLabelWithKey(2)  
-            elif key == QtCore.Qt.Key_3: 
-                self.editLabelWithKey(3)  
-            elif key == QtCore.Qt.Key_4: 
-                self.editLabelWithKey(4)  
-            elif key == QtCore.Qt.Key_5: 
-                self.editLabelWithKey(5)  
-            elif key == QtCore.Qt.Key_6: 
-                self.editLabelWithKey(6)  
-            elif key == QtCore.Qt.Key_7: 
-                self.editLabelWithKey(7)  
-            elif key == QtCore.Qt.Key_8: 
-                self.editLabelWithKey(8)  
-            elif key == QtCore.Qt.Key_9: 
-                self.editLabelWithKey(9)  
-            
+            elif key == QtCore.Qt.Key_1:
+                self.onNumKeyEvent(1)
+            elif key == QtCore.Qt.Key_2:
+                self.onNumKeyEvent(2)
+            elif key == QtCore.Qt.Key_3:
+                self.onNumKeyEvent(3)
+            elif key == QtCore.Qt.Key_4:
+                self.onNumKeyEvent(4)
+            elif key == QtCore.Qt.Key_5:
+                self.onNumKeyEvent(5)
+            elif key == QtCore.Qt.Key_6:
+                self.onNumKeyEvent(6)
+            elif key == QtCore.Qt.Key_7:
+                self.onNumKeyEvent(7)
+            elif key == QtCore.Qt.Key_8:
+                self.onNumKeyEvent(8)
+            elif key == QtCore.Qt.Key_9:
+                self.onNumKeyEvent(9)
 
-    def editLabelWithKey(self, key):
-        if self.hShape is None: 
-            return
-        self.labelEditWithKey.emit(key, self.hShape)
+    def onNumKeyEvent(self, key):
+        if self.hShape is None:
+            self.flagEditWithKey.emit(key)
+        else:
+            self.labelEditWithKey.emit(key, self.hShape)
 
     def keyReleaseEvent(self, ev):
         modifiers = ev.modifiers()
