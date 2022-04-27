@@ -187,7 +187,7 @@ class LabelListWidget(QtWidgets.QListView):
         if not isinstance(item, LabelListWidgetItem):
             raise TypeError("item must be LabelListWidgetItem")
         self.model().setItem(self.model().rowCount(), 0, item)
-        item.setSizeHint(self.itemDelegate().sizeHint(None, None))
+        item.setSizeHint(self.itemDelegate().sizeHint(None, None))\
 
     def removeItem(self, item):
         index = self.model().indexFromItem(item)

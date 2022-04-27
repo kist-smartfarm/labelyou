@@ -144,15 +144,16 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
 
             cnt = None
             max_area = -1
+            logger.info(f"{len(contours)} contours detected.")
             for i in range(len(contours)):
                 area = cv2.contourArea(contours[i])
                 if area > max_area:
                     cnt = contours[i]
                     max_area = area
-                    print(area, len(cnt))
 
             cv2.drawContours(result_img, cnt, -1, (0, 0, 255), 2)
-            poly = cv2.approxPolyDP(cnt, polygon_epsilon * cv2.arcLength(cnt, True),
+            poly = cv2.approxPolyDP(cnt,
+                                    polygon_epsilon * cv2.arcLength(cnt, True),
                                     True)
             cv2.drawContours(result_img, poly, -1, (0, 255, 0), 2)
             hull = cv2.convexHull(poly, returnPoints=True)
@@ -224,5 +225,7 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
                     convex_hull.addPoint(
                         QtCore.QPointF(x0 + point[0][0], y0 + point[0][1]))
                 convex_hull.close()
+                convex_hull.other_data['convex_hull'] = True
                 res_list.append(convex_hull)
             return res_list
+            

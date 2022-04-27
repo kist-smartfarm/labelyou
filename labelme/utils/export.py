@@ -1,14 +1,15 @@
-import PIL 
-import pathlib 
+import PIL
+import pathlib
 import multiprocessing
-import json 
+import json
 import datetime
 from .grid import to_excel
 import csv
-
+import cv2 
+import numpy as np 
 from labelme.logger import logger
 
-def get_annotation_file_list(image_list): 
+def get_annotation_file_list(image_list):
     json_list = [] 
     for _path in image_list: 
         json_path = pathlib.Path(_path).with_suffix('.json') 
@@ -43,21 +44,60 @@ def export_image_worker(output_dir, json_file):
                         str(shape['group_id']) if shape['group_id'] else "",
                         to_excel(shape['grid_x']+1) + str(shape['grid_y']+1),
                         cropped_img_name])
-            else: 
+            else:
                 cropped_img_name = "_".join([str(i), cropped_img_name])
             cropped_img_path = output_sub_dir / cropped_img_name
             cropped_img.save(cropped_img_path)
-            
+
 
 def export_workspace_images(image_list): 
     json_list = get_annotation_file_list(image_list)
     output_dir = 'annotations_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    pool_arg_list = [] 
-    for json_file in json_list: 
+    pool_arg_list = []
+    for json_file in json_list:
         pool_arg_list.append((output_dir, json_file))
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         pool.starmap(export_image_worker, pool_arg_list)
+
+
+def get_area(shape):
+    area = 0
+    if shape['shape_type'] == 'rectangle':
+        x1 = min(shape['points'][0][0], shape['points'][1][0])
+        x2 = max(shape['points'][0][0], shape['points'][1][0])
+        y1 = min(shape['points'][0][1], shape['points'][1][1])
+        y2 = max(shape['points'][0][1], shape['points'][1][1])
+        area = (x2 - x1) * (y2 - y1)
+    elif shape['shape_type'] == 'polygon':
+        cnt = []
+        for p in shape['points']:
+            cnt.append(p)
+        area = cv2.contourArea(np.array(cnt).astype(int))
+    return area
+
+
+def get_length(shape):
+    length = 0
+    if shape['shape_type'] == 'rectangle':
+        x1 = min(shape['points'][0][0], shape['points'][1][0])
+        x2 = max(shape['points'][0][0], shape['points'][1][0])
+        y1 = min(shape['points'][0][1], shape['points'][1][1])
+        y2 = max(shape['points'][0][1], shape['points'][1][1])
+        length = 2 * ((x2 - x1) + (y2 - y1))
+    elif shape['shape_type'] == 'polygon':
+        for i in range(len(shape['points']) - 1):
+            x1, y1 = shape['points'][i][0], shape['points'][i][1]
+            x2, y2 = shape['points'][i + 1][0], shape['points'][i + 1][1]
+            length += ((((x2 - x1) ** 2) + ((y2 - y1) ** 2)) ** 0.5)
+        x1, y1 = shape['points'][-1][0], shape['points'][-1][1]
+        x2, y2 = shape['points'][0][0], shape['points'][0][1]
+        length += ((((x2 - x1) ** 2) + ((y2 - y1) ** 2)) ** 0.5)
+    elif shape['shape_type'] == 'line':
+        x1, y1 = shape['points'][0][0], shape['points'][0][1]
+        x2, y2 = shape['points'][1][0], shape['points'][1][1]
+        length += ((((x2 - x1) ** 2) + ((y2 - y1) ** 2)) ** 0.5)
+    return length
 
 
 def export_workspace_label_report(image_list): 
@@ -85,16 +125,18 @@ def export_workspace_label_report(image_list):
                         label,
                         to_excel(grid_x) + str(grid_y) if grid_x and grid_y else "", 
                         grid_x,
-                        grid_y
+                        grid_y, 
+                        get_area(shape), 
+                        get_length(shape)
                     ])
                 
                 output_filename = json_list[0].parents[0] / ('label_report_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) 
                 with open(output_filename.with_suffix(".csv"),'w',newline='') as f:
                     wr = csv.writer(f) 
-                    wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "xy", "x", "y"])
+                    wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "xy", "x", "y", "area(pixel)", "length(pixel)"])
                     for record_per_file in export_records: 
                         wr.writerow(record_per_file)
-  
+
 
 def export_workspace_flag_report(image_list): 
     json_list = get_annotation_file_list(image_list)
@@ -125,3 +167,4 @@ def export_workspace_flag_report(image_list):
         wr.writerow(["filename"] + flag_list)
         for record_per_file in export_records: 
             wr.writerow(record_per_file)
+

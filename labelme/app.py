@@ -1182,11 +1182,13 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             item.setText("{} ({})".format(shape.label, shape.group_id))
         self.setDirty()
+        '''
         if not self.uniqLabelList.findItemsByLabel(shape.label):
             item = QtWidgets.QListWidgetItem()
             item.setData(Qt.UserRole, shape.label)
             self.uniqLabelList.addItem(item)
-    
+        '''
+
     def editFlagWithKey(self, key):
         if len(self.flag_widget) < key:
             logger.info(f'No Flag mapping for num key {key}')
