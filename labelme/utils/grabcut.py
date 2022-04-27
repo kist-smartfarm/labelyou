@@ -88,7 +88,7 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
     result_img = img_roi.copy()
 
     mask_global = np.zeros(img_roi.shape[:2], np.uint8) + 2
-
+    result_list = []
     while True:
         valid, masked = merge(mask_fore, mask_back, result_img)
         if not valid:
@@ -206,10 +206,9 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
         elif k == 27 :
             logger.info('grabcut abort')
             cv2.destroyAllWindows()
-            return None
+            break
         elif k == 13 :
             cv2.destroyAllWindows()
-            res_list = []
             if not poly.any():
                 continue
             polygon = Shape(shape_type="polygon")
@@ -217,7 +216,7 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
                 polygon.addPoint(
                     QtCore.QPointF(x0 + point[0][0], y0 + point[0][1]))
             polygon.close()
-            res_list.append(polygon)
+            result_list.append(polygon)
 
             if convex_hull:
                 convex_hull = Shape(shape_type="polygon")
@@ -226,6 +225,7 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
                         QtCore.QPointF(x0 + point[0][0], y0 + point[0][1]))
                 convex_hull.close()
                 convex_hull.other_data['convex_hull'] = True
-                res_list.append(convex_hull)
-            return res_list
-            
+                result_list.append(convex_hull)
+            break
+    return result_list
+        
