@@ -1314,12 +1314,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _update_shape_color(self, shape):
         r, g, b = self._get_rgb_by_label(shape.label)
+
+        fill_alpha = self._config["shape"]["fill_color"][3]
+        select_fill_alpha = self._config["shape"]["select_fill_color"][3]
+
         shape.line_color = QtGui.QColor(r, g, b)
         shape.vertex_fill_color = QtGui.QColor(r, g, b)
         shape.hvertex_fill_color = QtGui.QColor(255, 255, 255)
-        shape.fill_color = QtGui.QColor(r, g, b, 128)
+        shape.fill_color = QtGui.QColor(r, g, b, fill_alpha)
         shape.select_line_color = QtGui.QColor(255, 255, 255)
-        shape.select_fill_color = QtGui.QColor(r, g, b, 155)
+        shape.select_fill_color = QtGui.QColor(r, g, b, select_fill_alpha)
+        
 
     def _get_rgb_by_label(self, label):
         if self._config["shape_color"] == "auto":

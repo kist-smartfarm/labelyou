@@ -1,3 +1,8 @@
+##        General Configuration
+# auto_save : On every changes of shape, save changes on json file
+# store_data : saving image raw binary data in json file. Recommended to set false.
+##
+
 auto_save: false
 display_label_popup: true
 store_data: false
@@ -6,6 +11,12 @@ keep_prev_scale: false
 keep_prev_brightness: false
 keep_prev_contrast: false
 logger_level: info
+
+##        Label Configuration
+#  flags: classes of image file is declared as a list. Each flag can have true or false. ex) flags: [dog, cat, elephant]
+#  label_flags: not stable so far. 
+#  labels : A class of shape in image is declaed as a list. A shape can have only one class.  ex) labels: [dog, cat, elephant]
+##
 
 flags: null
 label_flags: null
@@ -19,14 +30,18 @@ shape_color: auto  # null, 'auto', 'manual'
 shift_auto_shape_color: 0
 label_colors: null
 
+##
+#  fill_color:  only 4th element is the alpha; transparency when the mouse hovering on a shape. [transparent 0 <------> 255 opaque]
+#  select_fill_color: only 4th element is the alpha; transparency when the shape is selected in edit mode. [transparent 0 <------> 255 opaque]
+#  point_size: the point size of all kind of shape. 
+##
 shape:
-  # drawing
   line_color: [0, 255, 0, 128]
-  fill_color: [0, 255, 0, 0]  # transparent
+  fill_color: [0, 255, 0, 30]  
   vertex_fill_color: [0, 255, 0, 255]
   # selecting / hovering
   select_line_color: [255, 255, 255, 255]
-  select_fill_color: [0, 255, 0, 155]
+  select_fill_color: [0, 255, 0, 60]
   hvertex_fill_color: [255, 255, 255, 255]
   point_size: 8
 
@@ -113,6 +128,12 @@ grid:
   row: 2
   margin : 0 
 
+##
+#  epsilon: Defines how tightly the generated polygons represent contour(border of segmented image).
+#  iteration: Defines how detailed the grabcut algorithm is to process. The Higher slower, and The lower faster.
+#  brush_size: Defines the size of brush in magic box mode
+#  convex_hull: If the convex_hull is true, the magic box returns the block hull polygon along with the original convex hull.
+##
 grabcut: 
   epsilon: 0.001
   iteration: 3
