@@ -105,6 +105,8 @@ def export_workspace_label_report(image_list):
     if len(json_list) == 0: 
         return
     export_records = [] 
+
+    output_filename = json_list[0].parents[0] / ('label_report_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) 
     for json_file in json_list: 
         with open(json_file) as f: 
             data = json.load(f)
@@ -130,7 +132,6 @@ def export_workspace_label_report(image_list):
                         get_length(shape)
                     ])
                 
-                output_filename = json_list[0].parents[0] / ('label_report_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) 
                 with open(output_filename.with_suffix(".csv"),'w',newline='') as f:
                     wr = csv.writer(f) 
                     wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "xy", "x", "y", "area(pixel)", "length(pixel)"])
