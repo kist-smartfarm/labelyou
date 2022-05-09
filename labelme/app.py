@@ -15,6 +15,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy import QtWidgets
 
+
 from labelme import __appname__
 from labelme import PY2
 from labelme.widgets.grid_dialog import GridDialog
@@ -2057,27 +2058,33 @@ class MainWindow(QtWidgets.QMainWindow):
     def export_workspace_images(self): 
         if len(self.imageList) == 0:
             self.statusBar().showMessage(str(self.tr("No File is opened. Exporting images failed.")))
+            QtWidgets.QMessageBox.critical(self, "Error", "No File is opened. Exporting images failed.")
         else: 
             self.statusBar().showMessage(str(self.tr("Working on it...")))
             utils.export_workspace_images(self.imageList)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
+            QtWidgets.QMessageBox.information(self, "Info", "Exporting done.")
 
     def export_workspace_label_report(self): 
         if len(self.imageList) == 0:
             self.statusBar().showMessage(str(self.tr("No File is opened. Exporting report failed.")))
+            QtWidgets.QMessageBox.critical(self, "Error", "No File is opened. Exporting images failed.")
         else: 
             self.statusBar().showMessage(str(self.tr("Working on it...")))
             utils.export_workspace_label_report(self.imageList)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
+            QtWidgets.QMessageBox.information(self, "Info", "Exporting done.")
 
     def export_workspace_flag_report(self): 
         if len(self.imageList) == 0:
             self.statusBar().showMessage(str(self.tr("No File is opened. Exporting report failed.")))
+            QtWidgets.QMessageBox.critical(self, "Error", "No File is opened. Exporting images failed.")            
         else: 
             self.statusBar().showMessage(str(self.tr("Working on it...")))
             utils.export_workspace_flag_report(self.imageList)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
-
+            QtWidgets.QMessageBox.information(self, "Info", "Exporting done.")
+            
 
     def getLabelFile(self):
         if self.filename.lower().endswith(".json"):
