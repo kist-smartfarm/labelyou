@@ -48,7 +48,7 @@ LABEL_COLORMAP = imgviz.label_colormap()
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = 0, 1, 2
+    FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM, FIT_SHAPE = 0, 1, 2, 3
 
     def __init__(
         self,
@@ -609,6 +609,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scalers = {
             self.FIT_WINDOW: self.scaleFitWindow,
             self.FIT_WIDTH: self.scaleFitWidth,
+            self.FIT_SHAPE: self.scaleFitShape,
             # Set to one to scale to 100% when loading files.
             self.MANUAL_ZOOM: lambda: 1,
         }
@@ -1166,6 +1167,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def onKeyPressedOnLabelWidgetItem(self, items, key):
         for item in items:
             self.editLabelWithKey(key, item.shape())
+        
 
     def editLabelWithKey(self, key, shape):
         if self.uniqLabelList.count() < key:
@@ -1479,6 +1481,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 selected_shapes.append(item.shape())
             if selected_shapes:
                 self.canvas.selectShapes(selected_shapes)
+                if len(selected_shapes) == 1: 
+                    self.adjustScaleWithShape(selected_shapes[0])
+                    self.adjustScrollWithShape(selected_shapes[0])
             else:
                 self.canvas.deSelectShape()
 
@@ -1619,6 +1624,33 @@ class MainWindow(QtWidgets.QMainWindow):
                 Qt.Vertical,
                 self.scrollBars[Qt.Vertical].value() + y_shift,
             )
+
+    def adjustScaleWithShape(self, shape): 
+        if shape.shape_type != 'rectangle': 
+            return 
+        value = self.scaleFitShape(shape)
+        value = int(100 * value)
+        self.zoomWidget.setValue(value)
+        self.zoom_values[self.filename] = (self.zoomMode, value)
+
+    def adjustScrollWithShape(self, shape): 
+        if shape.shape_type != 'rectangle': 
+            return 
+        value = self.scaleFitShape(shape)
+        if value > 10: 
+            value = 10
+        x = min(shape.points[0].x(), shape.points[1].x()) * value 
+        y = min(shape.points[0].y(), shape.points[1].y()) * value
+        #x = shape.points[1].x() * value 
+        #y = shape.points[1].y() * value
+        self.setScroll(
+            Qt.Horizontal,
+            x,
+        )
+        self.setScroll(
+            Qt.Vertical,
+            y,
+        )
 
     def setFitWindow(self, value=True):
         if value:
@@ -1813,12 +1845,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.adjustSize()
         self.canvas.update()
 
-    def adjustScale(self, initial=False):
+    def adjustScale(self, initial=False, scaler=None):
         value = self.scalers[self.FIT_WINDOW if initial else self.zoomMode]()
         value = int(100 * value)
         self.zoomWidget.setValue(value)
         self.zoom_values[self.filename] = (self.zoomMode, value)
 
+    def scaleFitShape(self, shape):
+        w = abs(shape.points[0].x() - shape.points[1].x())
+        h = abs(shape.points[0].y() - shape.points[1].y())
+        return self.canvas.pixmap.width() / w 
+ 
     def scaleFitWindow(self):
         """Figure out the size of the pixmap to fit the main widget."""
         e = 2.0  # So that no scrollbars are generated.
