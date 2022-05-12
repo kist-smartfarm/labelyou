@@ -1854,7 +1854,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def scaleFitShape(self, shape):
         w = abs(shape.points[0].x() - shape.points[1].x())
         h = abs(shape.points[0].y() - shape.points[1].y())
-        return self.canvas.pixmap.width() / w 
+        value_shape_length = max(w, h)
+        value_fit_width = self.scaleFitWidth()
+        print(value_fit_width,value_shape_length, self.canvas.pixmap.width())
+        value = float(value_fit_width) * float(self.canvas.pixmap.width()) / (2 * float(value_shape_length))
+        #print(self.canvas.pixmap.width(), w, h)
+        return value #self.canvas.pixmap.width() / w 
  
     def scaleFitWindow(self):
         """Figure out the size of the pixmap to fit the main widget."""
