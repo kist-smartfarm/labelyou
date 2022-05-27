@@ -18,7 +18,7 @@ def get_annotation_file_list(image_list):
     return json_list
      
 
-def export_image_worker(output_dir, json_file):
+def export_image_worker(output_dir, json_file, make_sub_dir=False, prefix=None):
     with open(json_file) as f: 
         data = json.load(f) 
         image_name = pathlib.Path(data['imagePath']).name
@@ -26,7 +26,8 @@ def export_image_worker(output_dir, json_file):
 
         img = PIL.Image.open(str(json_file.parents[0] / image_name))
         output_sub_dir = json_file.parents[0] / output_dir 
-        output_sub_dir = output_sub_dir / f'{str(pathlib.Path(image_name).with_suffix(""))}'
+        if make_sub_dir: 
+            output_sub_dir = output_sub_dir / f'{str(pathlib.Path(image_name).with_suffix(""))}'
         output_sub_dir.mkdir(exist_ok=True, parents=True)
 
         for i, shape in enumerate(data['shapes']): 
@@ -46,16 +47,20 @@ def export_image_worker(output_dir, json_file):
                         cropped_img_name])
             else:
                 cropped_img_name = "_".join([str(i), cropped_img_name])
+            cropped_img_name = "_".join([str(pathlib.Path(image_name).with_suffix("")), cropped_img_name])
+            if prefix: 
+                cropped_img_name = "_".join([prefix, cropped_img_name])
+                
             cropped_img_path = output_sub_dir / cropped_img_name
             cropped_img.save(cropped_img_path)
 
 
-def export_workspace_images(image_list): 
+def export_workspace_images(image_list,  make_sub_dir=False, prefix=None): 
     json_list = get_annotation_file_list(image_list)
     output_dir = 'annotations_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     pool_arg_list = []
     for json_file in json_list:
-        pool_arg_list.append((output_dir, json_file))
+        pool_arg_list.append((output_dir, json_file, make_sub_dir, prefix))
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         pool.starmap(export_image_worker, pool_arg_list)

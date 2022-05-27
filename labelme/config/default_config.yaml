@@ -139,3 +139,7 @@ grabcut:
   iteration: 3
   brush_size: 5
   convex_hull: false
+
+export: 
+  export_image_make_sub_dir: false
+  export_image_file_prefix: IS

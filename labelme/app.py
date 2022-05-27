@@ -2103,7 +2103,9 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Error", "No File is opened. Exporting images failed.")
         else: 
             self.statusBar().showMessage(str(self.tr("Working on it...")))
-            utils.export_workspace_images(self.imageList)
+            mk_sub_dir = self._config['export']['export_image_make_sub_dir']
+            img_prefix = self._config['export']['export_image_file_prefix']
+            utils.export_workspace_images(self.imageList, mk_sub_dir, img_prefix)
             self.statusBar().showMessage(str(self.tr("Exporting done.")))
             QtWidgets.QMessageBox.information(self, "Info", "Exporting done.")
 
