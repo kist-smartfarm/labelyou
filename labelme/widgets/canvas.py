@@ -701,7 +701,7 @@ class Canvas(QtWidgets.QWidget):
                 self.storeShapes()
                 self.newShapes.emit(len(new_shapes))
             else:
-                self.canvas.cancle_drawing_all()
+                self.cancle_drawing_all()
         else:
             self.shapes.append(self.current)
             self.storeShapes()
