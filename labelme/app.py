@@ -1307,7 +1307,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelDialog.addLabelHistory(shape.label)
         for action in self.actions.onShapesPresent:
             action.setEnabled(True)
-
         self._update_shape_color(shape)
         label_list_item.setText(
             '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
@@ -1317,7 +1316,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _update_shape_color(self, shape):
         r, g, b = self._get_rgb_by_label(shape.label)
-
         fill_alpha = self._config["shape"]["fill_color"][3]
         select_fill_alpha = self._config["shape"]["select_fill_color"][3]
 
@@ -1565,6 +1563,8 @@ class MainWindow(QtWidgets.QMainWindow):
             shapes = self.canvas.setLastLabels(text, flags, n)
             for shape in shapes:
                 shape.group_id = group_id
+                if 'convex_hull' in shape.other_data:
+                    shape.label = "-".join([shape.label, "cvxh"])
                 self.addLabel(shape)
             self.actions.editMode.setEnabled(True)
             self.actions.undoLastPoint.setEnabled(False)
@@ -2211,7 +2211,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def removeSelectedPoint(self):
         self.canvas.removeSelectedPoint()
         self.canvas.update()
-        if not self.canvas.hShape.points:
+        if self.canvas.hShape is not None and not self.canvas.hShape.points:
             self.canvas.deleteShape(self.canvas.hShape)
             self.remLabels([self.canvas.hShape])
             self.setDirty()
