@@ -1536,7 +1536,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #for grid
     def newShapes(self, n): 
         assert n != 0
-        self.status(f"I am making {n} cells in the grid....;;")
+        self.status(f"Making {n} cells in the grid....;;")
         # return it! 
         items = self.uniqLabelList.selectedItems()
         text = None
@@ -1780,6 +1780,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.labelFile.flags is not None:
                 flags.update(self.labelFile.flags)
         self.loadFlags(flags)
+
+        self.shape_dock.setWindowTitle(f"Polygon Label ({len(self.labelList)})" \
+            if len(self.labelList) > 0 else "Polygon Label")
+
         if self._config["keep_prev"] and self.noShapes():
             self.loadShapes(prev_shapes, replace=False)
             self.setDirty()
@@ -2335,6 +2339,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setCheckState(Qt.Unchecked)
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
+        self.file_dock.setWindowTitle(f"File List ({self.fileListWidget.count()})")
 
     def scanAllImages(self, folderPath):
         extensions = [
