@@ -36,6 +36,9 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
+from labelme.utils import cv
+
+
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
 
@@ -383,6 +386,15 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=True 
         )
 
+        makeConvexHull = action(
+            self.tr("Make Convex Hull"), 
+            self.makeConvexHull,
+            shortcuts["make_convexhull"],
+            None,
+            self.tr("Make Convex Hull for selected polygons"), 
+            enabled=True 
+        )
+
         createRectangleMode = action(
             self.tr("Create Rectangle"),
             lambda: self.toggleDrawMode(False, createMode="rectangle"),
@@ -439,7 +451,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Move and edit the selected polygons"),
             enabled=False,
         )
-
         delete = action(
             self.tr("Delete Polygons"),
             self.deleteSelectedShape,
@@ -665,6 +676,7 @@ class MainWindow(QtWidgets.QMainWindow):
             editMode=editMode,
             createGridMode = createGridMode, 
             configureGrid = configureGrid, 
+            makeConvexHull = makeConvexHull, 
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -691,6 +703,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 delete,
                 None,
                 configureGrid, 
+                makeConvexHull, 
                 None, 
                 undo,
                 undoLastPoint,
@@ -1013,6 +1026,29 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Callbacks
 
+    def makeConvexHull(self): 
+        new_shapes = []
+        for item in self.labelList.selectedItems(): 
+            shape = item.shape()
+            points, type, label = shape.points, shape.shape_type, shape.label
+            if type != 'polygon': 
+                continue
+            points = [[[p.x(), p.y()]] for p in points]
+            cvxhPoints = cv.makeConvexHullShape(points)
+            convex_hull = Shape(shape_type='polygon')
+            for point in cvxhPoints: 
+                convex_hull.addPoint(
+                        QtCore.QPointF(point[0][0],  point[0][1]))
+            convex_hull.close()
+            convex_hull.other_data['convex_hull'] = True
+            new_shapes.append(convex_hull)
+
+        if len(new_shapes) > 0:
+            self.canvas.shapes += new_shapes    
+            self.canvas.storeShapes()
+            self.newShapes(len(new_shapes), label)
+
+    
     def configureGrid(self):
         res = self.gridDialog.popUp()
         if res:
@@ -1534,17 +1570,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.shapesBackups.pop()
     
     #for grid
-    def newShapes(self, n): 
+    def newShapes(self, n, label=None): 
         assert n != 0
         self.status(f"Making {n} cells in the grid....;;")
         # return it! 
         items = self.uniqLabelList.selectedItems()
-        text = None
+        text = label 
         if items:
             text = items[0].data(Qt.UserRole)
         flags = {}
         group_id = None
-        if self._config["display_label_popup"] or not text:
+        if label == None and (self._config["display_label_popup"] or not text):
             previous_text = self.labelDialog.edit.text()
             text, flags, group_id = self.labelDialog.popUp(text)
             if not text:

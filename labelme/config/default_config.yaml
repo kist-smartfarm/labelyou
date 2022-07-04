@@ -116,6 +116,7 @@ shortcuts:
   copy_polygon: Ctrl+C
   paste_polygon: Ctrl+V
   undo: Ctrl+Z
+  make_convexhull: Ctrl+M
   undo_last_point: Ctrl+Z
   add_point_to_edge: Ctrl+Shift+P
   edit_label: Ctrl+E

@@ -5,7 +5,7 @@ from qtpy import QtWidgets
 from labelme import QT5
 from labelme.shape import Shape
 import labelme.utils
-from labelme.utils.grabcut import processGrabcut
+from labelme.utils.cv import processGrabcut
 from labelme.widgets.grid_dialog import GridDialog
 
 # TODO(unknown):

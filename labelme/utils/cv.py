@@ -16,6 +16,11 @@ fgdModel = None
 poly = np.array([])
 
 
+def makeConvexHullShape(points): 
+    poly = np.array(points).astype(np.int32)
+    hull = cv2.convexHull(poly)
+    return hull
+
 def qpixmapToCvMat(qpixmap):
     channels_count = 4
     width, height = qpixmap.width(), qpixmap.height()
@@ -228,4 +233,3 @@ def processGrabcut(qpixmap, shape, polygon_epsilon=0.001,
                 result_list.append(convex_hull)
             break
     return result_list
-        
