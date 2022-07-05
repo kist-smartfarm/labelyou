@@ -1031,7 +1031,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for item in self.labelList.selectedItems(): 
             shape = item.shape()
             points, type, label = shape.points, shape.shape_type, shape.label
-            if type != 'polygon': 
+            if type != 'polygon' or 'convex_hull' in shape.other_data:
                 continue
             points = [[[p.x(), p.y()]] for p in points]
             cvxhPoints = cv.makeConvexHullShape(points)
