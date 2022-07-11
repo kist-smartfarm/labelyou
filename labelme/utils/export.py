@@ -40,7 +40,8 @@ def export_image_worker(output_dir, json_file, make_sub_dir=False, prefix=None):
             cropped_img = img.crop((left, top, right, bottom))
 
             cropped_img_name = f"{shape['label']}.png"
-            if 'grid_x' in shape and 'grid_y' in shape:
+            if 'grid_x' in shape and 'grid_y' in shape \
+                and shape['grid_x'] != None and shape['grid_y'] != None:
                 cropped_img_name = "_".join([str(i),
                         str(shape['group_id']) if shape['group_id'] else "",
                         to_excel(shape['grid_x']+1) + str(shape['grid_y']+1),
