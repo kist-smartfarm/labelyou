@@ -108,6 +108,7 @@ def get_length(shape):
 def export_workspace_label_report(image_list): 
     json_list = get_annotation_file_list(image_list)
     if len(json_list) == 0: 
+        logger.info("NO JSON on export")
         return
     export_records = [] 
 
@@ -121,7 +122,7 @@ def export_workspace_label_report(image_list):
                     annotation_type = shape['shape_type']
                     label = shape['label']
                     group_id = shape['group_id']
-                    export_record = [
+                    record_per_file = [
                         filename, 
                             annotation_id, 
                             annotation_type,
@@ -134,20 +135,23 @@ def export_workspace_label_report(image_list):
                         and shape['grid_x'] != None and shape['grid_y'] != None:
                         grid_x = shape['grid_x'] + 1 if 'grid_x' in shape else ""
                         grid_y = shape['grid_y'] + 1 if 'grid_y' in shape else ""
-                        export_record += [
+                        record_per_file += [
                             to_excel(grid_x) + str(grid_y) if grid_x and grid_y else "", 
                             grid_x,
                             grid_y, 
                         ]
-                        export_records.append(export_record)
+                    else: 
+                        record_per_file += [None, None, None]
+                    export_records.append(record_per_file)
+            else: 
+                logger.info(f"no shape in file {filename}")
                     
-                with open(output_filename.with_suffix(".csv"),'w',newline='') as f:
-                    wr = csv.writer(f) 
-                    wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "xy", "x", "y", "area(pixel)", "length(pixel)"])
-                    for record_per_file in export_records: 
-                        wr.writerow(record_per_file)
-
-
+    with open(output_filename.with_suffix(".csv"),'w',newline='') as f:
+        wr = csv.writer(f) 
+        wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "area(pixel)", "length(pixel)", "xy", "x", "y"])
+        for record_per_file in export_records: 
+            wr.writerow(record_per_file)
+ 
 def export_workspace_flag_report(image_list): 
     json_list = get_annotation_file_list(image_list)
     if len(json_list) == 0: 
