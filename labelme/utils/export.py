@@ -55,7 +55,6 @@ def export_image_worker(output_dir, json_file, make_sub_dir=False, prefix=None):
             cropped_img_path = output_sub_dir / cropped_img_name
             cropped_img.save(cropped_img_path)
 
-
 def export_workspace_images(image_list,  make_sub_dir=False, prefix=None): 
     json_list = get_annotation_file_list(image_list)
     output_dir = 'annotations_' + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -122,22 +121,26 @@ def export_workspace_label_report(image_list):
                     annotation_type = shape['shape_type']
                     label = shape['label']
                     group_id = shape['group_id']
-                    grid_x = shape['grid_x'] + 1 if 'grid_x' in shape else ""
-                    grid_y = shape['grid_y'] + 1 if 'grid_y' in shape else ""
-                    
-                    export_records.append([
+                    export_record = [
                         filename, 
-                        annotation_id, 
-                        annotation_type,
-                        group_id if group_id else "", 
-                        label,
-                        to_excel(grid_x) + str(grid_y) if grid_x and grid_y else "", 
-                        grid_x,
-                        grid_y, 
-                        get_area(shape), 
-                        get_length(shape)
-                    ])
-                
+                            annotation_id, 
+                            annotation_type,
+                            group_id if group_id else "", 
+                            label, 
+                            get_area(shape), 
+                            get_length(shape)
+                    ]
+                    if 'grid_x' in shape and 'grid_y' in shape \
+                        and shape['grid_x'] != None and shape['grid_y'] != None:
+                        grid_x = shape['grid_x'] + 1 if 'grid_x' in shape else ""
+                        grid_y = shape['grid_y'] + 1 if 'grid_y' in shape else ""
+                        export_record += [
+                            to_excel(grid_x) + str(grid_y) if grid_x and grid_y else "", 
+                            grid_x,
+                            grid_y, 
+                        ]
+                        export_records.append(export_record)
+                    
                 with open(output_filename.with_suffix(".csv"),'w',newline='') as f:
                     wr = csv.writer(f) 
                     wr.writerow(["filename", "index", "annotation_type", "group_id", "label", "xy", "x", "y", "area(pixel)", "length(pixel)"])
